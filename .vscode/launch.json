@@ -1,0 +1,394 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+
+
+
+		// BPtracer Kraken2 DB-202212调试
+		{
+			"name": "BPtracer Kraken2 DB-202212 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--config",
+				"bptracer.config",
+				"Kraken2",
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--pwd",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/Kraken2"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// BPtracer Kraken2 DB-202406调试
+		{
+			"name": "BPtracer Kraken2 DB-202406 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--config",
+				"bptracer.config",
+				"Kraken2",
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--db",
+				"krakenDB-202406",
+				"--pwd",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/Kraken2New"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// BPtracer BPTracer1 调试
+		{
+			"name": "BPtracer BPTracer1 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--config",
+				"bptracer.config",
+				"BP",
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--pwd",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// BPtracer BPTracer2 调试
+		{
+			"name": "BPtracer BPTracer2 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--config",
+				"bptracer.config",
+				"BP2",
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--pwd",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// BPtracer BPTracer1 调试
+		{
+			"name": "BPtracer BPTracer1 调试2",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--config",
+				"bptracer.config",
+				"BP",
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--pwd",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer2"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// BPtracer BPTracer2 调试
+		{
+			"name": "BPtracer BPTracer2 调试2",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--config",
+				"bptracer.config",
+				"BP2",
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--pwd",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer2"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// MergeMeta 调试
+		{
+			"name": "MergeMeta 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"-p",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MetaOnline",
+				"-n",
+				"meta_data_online.txt",	
+				"-o",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MetaOnline/final.meta_data_online.txt"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+		// Read_stat 调试
+		{
+			"name": "Read_stat 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--file",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/clean.fq.list",
+				"--output",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/ReadsStat/sample.stat.xls",
+				"--threads",
+				"100"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			},
+		},
+		// MergeFa 旧版调试
+		{
+			"name": "MergeFa 旧版调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--indir",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/",
+				"--outdir",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/",
+				"--meta_data_in",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/meta-data.txt",
+				"--meta_data_out",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/meta_data_online.txt",
+				"--extracted_fasta",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/extracted.fa",
+				"--coglist",
+				"/mnt/sdb/zhangyz/bin/BPtracer/db/BPTracer/Gene/all_KO30_name.list",
+				"--config",
+				"/mnt/sdb/zhangyz/bin/BPtracer/bptracer/config.py"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+		
+		// MergeFa 调试
+		{
+			"name": "MergeFa 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--indir",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/",
+				"--outdir",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/",
+				"--sample_id",
+				"A1",
+				"--meta_data_out",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/meta_data_online.txt",
+				"--extracted_fasta",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/extracted.fa",
+				"--coglist",
+				"/mnt/sdb/zhangyz/bin/BPtracer/db/BPTracer/Gene/all_KO30_name.list",
+				"--config",
+				"/mnt/sdb/zhangyz/bin/BPtracer/bptracer/config.py"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+		// MergeFa 调试2
+		{
+			"name": "MergeFa 调试2",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--indir",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer/BP-Tracer/00.DataStat/A2",
+				"--outdir",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer/BP-Tracer/02.ARG/A2",
+				"--sample_id",
+				"A1",
+				"--meta_data_out",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/meta_data_online.txt",
+				"--extracted_fasta",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_MergeFa/A1_New/extracted.fa",
+				"--coglist",
+				"/mnt/sdb/zhangyz/bin/BPtracer/db/BPTracer/Gene/all_KO30_name.list",
+				"--config",
+				"/mnt/sdb/zhangyz/bin/BPtracer/bptracer/config.py"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// GeneAbundance ARGs调试
+		{
+			"name": "GeneAbundance ARGs调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"-m",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/ARGs/final.meta_data_online.txt",
+				"-p",
+				"ARG",
+				"-i",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/ARGs/blastx.out",
+				"-db",
+				"/mnt/sdb/zhangyz/bin/TAVMM/DB/ARG-uniq.fa",
+				"-s",
+				"/mnt/sdb/zhangyz/bin/TAVMM/DB/ARG-uniq.structure",
+				"-o",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/ARGs"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+		// GeneAbundance VFs调试
+		{
+			"name": "GeneAbundance VFs 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"-i",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/VFs/extracted.fa",
+				"-m",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/VFs/final.meta_data_online.txt",
+				"-p",
+				"ARG",
+				"-i",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/VFs/blastx.out",
+				"-db",
+				"/mnt/sdb/zhangyz/bin/TAVMM/DB/VFDB-uniq.fa",
+				"-s",
+				"/mnt/sdb/zhangyz/bin/TAVMM/DB/VFDB-uniq.structure",
+				"-o",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_GeneAbundance/VFs"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// GeneAbundance ARGs调试
+		{
+			"name": "GenerateSubTable 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"--input",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer2/BPTracer/01.ARGs/ARGs.ppm.txt",
+				"--output",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer2/BPTracer/01.ARGs/ARGs.ppm.Type.txt",
+				"--group_by",
+				"Type"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+
+		// GeneAddTax 调试
+		{
+			"name": "GeneAddTax 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"/mnt/sdb/zhangyz/bin/BPtracer/db/BPTracer/Gene/species.txt",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer2/BPTracer/01.ARGs/OUT.ARGs.ppm.txt",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer2/BPTracer/01.ARGs/Tax.ARGs.ppm.txt"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		},
+
+		// FilterFasta ARGs调试
+		{
+			"name": "FilterFasta 调试",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",
+			"args": [
+				"-m8",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_FilterFasta/Final.ARGs.blast.m8",
+				"-fa",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_FilterFasta/Final.extracted.fa",
+				"-o_m8",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_FilterFasta/Final.ARGs.blast.m8.fil",
+				"-o_fa",
+				"/mnt/sdb/zhangyz/bin/BPtracer/tests/BPTracer_FilterFasta/Final.extracted.fa.fil",
+				
+				"-l",
+				"25",
+				"-id",
+				"80",
+				"-e",
+				"1e-7"
+
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"
+			}
+		}
+
+	]
+}

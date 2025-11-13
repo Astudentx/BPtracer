@@ -1,0 +1,21 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "BPtracer 调试2",
+			"type": "python",
+			"request": "launch",
+			"program": "${file}",
+			"console": "integratedTerminal",
+			"pythonPath": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin/python3",  // 替换为你的 Conda 环境路径
+			"args": [
+				"Kraken2",
+				"--file /mnt/sdb/zhangyz/bin/BPtracer/tests/foldcreate/clean.fq.list",
+				"--pwd /mnt/sdb/zhangyz/bin/BPtracer/tests/Kraken2"
+			],
+			"env": {
+				"PATH": "/mnt/sdb/zhangyz/miniconda3/envs/BPtracer/bin:${env:PATH}"  // 激活 Conda 环境
+			}
+		}
+	]
+}
