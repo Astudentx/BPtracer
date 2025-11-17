@@ -1,198 +1,210 @@
 
+---
 # BPtracer
 
-**BPtracer** 是一个综合性的宏基因组数据分析工具，支持从原始测序数据出发，完成包括物种分类、功能基因识别、物种溯源以及水平基因转移（Horizontal Gene Transfer, HGT）分析的全流程处理。
+**BPtracer** 是一个面向宏基因组（metagenomics）的多阶段分析流水线，可从双端测序 Reads 出发完成以下任务：
 
-## 🔧 核心功能
+* 物种组成解析
+* 功能基因识别与定量
+* 功能基因宿主溯源
+* 基于 Contig 的水平基因转移（Horizontal Gene Transfer, HGT）分析
 
-1. **基于 Reads 的物种分类学分析**  
-    使用 Kraken2 实现高效的分类注释，默认提供基于 Pangenomes 的自建数据库，同时支持自定义数据库加载。  
-
-
-2. **基于 Reads 的功能基因识别与溯源分析**  
-    基于自建的Python3封装流程，支持识别并追踪以下主流功能基因：
-    - 抗生素抗性基因（Antibiotic Resistance Genes, ARGs）
-    - 可移动遗传元件（Mobile Genetic Elements, MGEs）
-    - 毒力因子（Virulence Factors, VFs）
-    - 金属抗性基因（Metal Resistance Genes, MRGs）
-    - 抗压力基因（Stress Genes, SGs）
-
-
-3. **基于 Contig 的水平基因转移分析（HGT）**  
-    集成 [WAAFLE](https://github.com/biobakery/waafle) 工具，识别潜在的 HGT 事件。支持多种数据库（默认使用 Pangenomes 数据库，也兼容 WAAFLE 提供的 `chocophlan2` 数据库等）。
+BPtracer 的核心设计思想为：
+**按阶段（S00–S04）生成可并行执行的 Shell 脚本，不同步骤自动串联，既适合普通服务器，又适合集群调度系统（SGE/Slurm 等）批处理。**
 
 ---
 
-## 📦 安装方式
+## ✨ 功能概览
 
-软件主提安装
+### 1. Tax 模块（Tax）
+
+基于 **Kraken2** 的物种注释，支持标准 Kraken2 数据库与 Pangenome 格式数据库（如 BPTax_V2）。
+
+### 2. 功能基因注释（BP / BP2）
+
+支持以下基因类型：
+
+* **ARGs**：抗生素抗性基因
+* **MGEs**：可移动遗传元件
+* **MRGs**：金属抗性基因
+* **VFs**：毒力因子
+* **SGs**：压力抗性基因
+
+流程分为两部分：
+
+* **BP**：基于 Reads 的初步功能基因注释
+* **BP2**：提取目标序列 → 分块 BLAST → 合并结果 → 生成定量表与宿主溯源表
+
+### 3. HGT 模块（HGT）
+
+基于 **WAAFLE** 的 HGT 分析，适用于 RefseqPan2 或 chocophlan2 等数据库。
+
+### 4. 组装模块（Megahit / SPAdes）
+
+对 Clean Reads 进行组装，作为 HGT 分析或后续基因注释的基础。
+
+---
+
+## 📦 安装
+
 ```bash
 # 克隆仓库
 git clone https://github.com/Astudentx/BPtracer
 cd BPtracer
 
-# 创建并激活 Conda 环境
+# 环境安装
 conda env create -f environment.yml
 conda activate BPtracer
 ```
-数据库安装
+
+### 数据库安装
+
+数据库较大，请通过网盘下载后解压到 `BPtracer/db/`：
+
 ```bash
-# 数据库较大，请通过百度网盘下载，安装到 `BPtracer/db/`中
-# 下载链接：
-# 链接: https://pan.baidu.com/s/xxxxxxxx 提取码: xxxx
+链接: https://pan.baidu.com/s/xxxxxxxx   提取码: xxxx
+
+cd BPtracer
+tar -zxvf db.tar.gz
 ```
 
 ---
 
-## 🚀 快速开始
+## 📥 输入文件格式
 
-### 1. 准备工作
-
-- 准备双端 Reads 的 FASTQ 文件；
-- 创建一个 `<Paired_fastaq_list>` 文件，使用 Tab 分隔，例如：
-```bash
-A1	/FilePath/A1.clean.1.fq.gz	/FilePath/A1.clean.2.fq.gz
-A2	/FilePath/A2.clean.1.fq.gz	/FilePath/A2.clean.2.fq.gz
-A3	/FilePath/A3.clean.1.fq.gz	/FilePath/A3.clean.2.fq.gz
+### 1. Reads 列表
+SampleID  (tab) Read1_path  (tab) Read2_path 必须tab分隔
+```
+A1         /path/A1.1.fq.gz    /path/A1.2.fq.gz
+A2         /path/A2.1.fq.gz    /path/A2.2.fq.gz
 ```
 
-- 若进行 HGT 分析，还需准备对应样本的组装 Contig 文件，使用 Tab 分隔，例如：
-```bash
-A1	/FilePath/A1.contig.ok.fa
-A2	/FilePath/A2.contig.ok.fa
-A3	/FilePath/A3.contig.ok.fa
+### 2. Contig 列表（用于 HGT）
+SampleID  (tab) Contig_path 必须tab分隔
 ```
-
-
-### 2. 物种分类分析以及功能基因识别与溯源分析
-
-#### 基因注释主流程 (BP)
-
-```bash
-BPtracer BP --file <Paired_fastaq_list> --pwd <output_folder> --GeneType ARGs,MGEs
+A1          /path/A1.contig.2k.fa
+A2          /path/A2.contig.2k.fa
 ```
-
-#### 基因序列提取与溯源表获取 (BP2)
-
-```bash
-BPtracer BP2 --file <Paired_fastaq_list> --pwd <output_folder> --GeneType ARGs
-```
-
-您同样可以使用非自带Kraken2额外的数据库分析（Kraken2）
-```bash
-# 默认使用 BPtracer BP 就可以在shell文件夹中生成物种分析脚本，如果您想指定数据库也可使用封装的Kraken其他数据库
-BPtracer Kraken2 --file <Paired_fastaq_list> --db <database_name> --pwd <output_folder>
-```
-
-- 支持的数据库包括：`BPTax_V1`, `BPTax_V2`, `krakenDB-202212`, `krakenDB-202406`
-
-### 3. 水平基因转移分析 (HGT)
-
-####  Contig组装（Megahit 或 SPAdes）
-
-```bash
-# 您可以选择自己已经组装好的Contig文件
-# 额外封装了Megahit与SPAdes两种主流组装软件，可基于自身情况进行挑选
-# Megahit: 推荐，占用资源更少，速度更快
-# SPAdes: 长度更长，识别HGT的准确性更高，识别事件更多
-BPtracer Megahit --file <Paired_fastaq_list> --pwd <output_folder> # Megahit
-BPtracer SPAdes   --file <Paired_fastaq_list> --pwd <output_folder> # SPAdes
-```
-#### 水平基因转移分析
-```bash
-BPtracer HGT --file <Contig_fasta_list> --db RefseqPan2 --pwd <output_folder>
-```
-
-- 可选数据库包括：`RefseqPan2`, `chocophlan2`, `UnigeneSet-waafledb.v1.fa`, `UnigeneSet-waafledb.v2.fa`
 
 ---
 
-## 📂 Shell脚本说明与投递建议
+## 🚀 自动运行模式（推荐）
 
-在使用 `BPtracer` 进行数据分析时，会自动生成大量 `.sh` 脚本用于提交任务。这些脚本主要位于 `shell/` 文件夹中，结构如下所示（仅展示部分）：
+BPtracer 的所有模块均支持自动化执行：
+
+* **直接运行 Python 脚本：**
 
 ```bash
-# Tax分析----------------------
-# Kraken2物种注释
+python3 BPtracer.py MODULE_NAME [options] --auto_run
+```
+
+---
+
+## 🔧 示例：一键分析宏基因组数据
+
+### 1. Tax（物种分类）
+
+```bash
+python3 BPtracer.py Tax \
+    --file clean.fq.list \
+    --pwd Analysis \
+    --auto-run \
+    --max-workers 3
+```
+
+---
+
+### 2. BP（初步功能基因注释）
+
+```bash
+python3 BPtracer.py BP \
+    --file clean.fq.list \
+    --pwd Analysis \
+    --GeneType ARGs,MGEs,MRGs,VFs,SGs \
+    --auto-run \
+    --max-workers 3
+```
+
+---
+
+### 3. BP2（序列提取 + BLAST + 溯源）
+
+```bash
+python3 BPtracer.py BP2 \
+    --file clean.fq.list \
+    --pwd Analysis \
+    --GeneType ARGs,MGEs,MRGs,VFs,SGs \
+    --auto-run \
+    --max-workers 10
+```
+
+---
+
+### 4. 组装（Megahit / SPAdes）
+
+MEGAHIT：
+
+```bash
+python3 BPtracer.py Megahit \
+    --file clean.fq.list \
+    --pwd data/Contigs2 \
+    --auto-run \
+    --max-workers 3
+```
+
+SPAdes：
+
+```bash
+python3 BPtracer.py SPAdes \
+    --file clean.fq.list \
+    --pwd data/Contigs_SPades \
+    --auto-run \
+    --max-workers 1
+```
+
+---
+
+### 5. HGT（基于 WAAFLE）
+
+```bash
+python3 BPtracer.py HGT \
+    --file contig.2k.fa.list \
+    --db chocophlan2 \
+    --pwd Analysis \
+    -c bptracer.config \
+    --auto-run \
+    --max-workers 3
+```
+
+---
+
+## 🧱 手动模式（适合 HPC 集群）
+
+脚本生成在 `config.SHELL_PATH`，例如：
+
+```
 Tax.S01.Kraken2.A1.sh
-# 合并生成丰度表
-Tax.S02.Kraken2.Merge.sh
-
-# BP1分析----------------------
-# BP1Reads序列统计
-BP.S01.RawStat.A1.sh
-# BP1Reads功能基因注释
 BP.S02.ARGsAnno.A1.sh
-BP.S02.MGEsAnno.A1.sh
-BP.S02.MRGsAnno.A1.sh
-BP.S02.SGsAnno.A1.sh
-BP.S02.VFsAnno.A1.sh
-
-# BP2分析----------------------
-# BP2提取初步注释的序列进行二次注释
 BP.S03.temp.ARGs.0.sh
-BP.S03.temp.ARGs.1.sh
-BP.S03.temp.ARGs.2.sh
-BP.S03.temp.MGEs.0.sh
-# BP2合并生成丰度表
 BP.S04.ARGs.Merge.sh
-BP.S04.MGEs.Merge.sh
-BP.S04.MRGs.Merge.sh
-BP.S04.SGs.Merge.sh
-BP.S04.VFs.Merge.sh
-
-# HGT分析----------------------
-# Reads组装
-Megahit.S01.Assambly.A1.sh
-SPAdes.S01.Assambly.A1.sh
-# WAAFLE分析HGT
-HGT.S01.chocophlan2.A1.sh
-
 ```
 
-### 🧭 shell脚本说明
+手动运行示例：
 
-- `Tax.`：分类学注释（Kraken2分析）
-- `BP.`：基因注释与溯源（包含 ARGs, MGEs, MRGs, SGs, VFs 等）
-- `Megahit.` / `SPAdes.`：基于Megahit或SPAdes的组装模块
-- `HGT.`：基于WAAFLE的水平基因转移分析模块
-
-### 🗂️ 投递规则建议
-
-1. **不同模块可独立投递**  
-   如：`BP.` 与 `Tax.` 模块可以分别提交，不必等待对方完成。
-
-2. **同一模块需遵循流程顺序**  
-   - 例如，`BP.` 模块必须按照 `BP.S01.` → `BP.S02.` → `BP.S03.` → `BP.S04.` 的顺序依次提交。
-   - 每一阶段内部的不同样本脚本（如 `BP.S01.RawStat.A1.sh` ~ `A6.sh`）可并行提交。
-
-3. **子任务自动命名**  
-   - 脚本以样本编号（如 `A1` ~ `A6`）或任务编号自动命名，便于追踪分析流程。
-
-4. **合并步骤不可跳过**  
-   - 所有 `.Merge.sh` 脚本（如 `BP.S04.ARGs.Merge.sh`）需在对应阶段所有样本分析完成后再执行。
-
-## 🧬 主要项目结构说明
-
-```
-BPtracer/
-├── BPtracer/
-│   ├── Kraken2.py     # 物种分类模块
-│   ├── BP.py               # 主功能基因注释流程
-│   ├── BP2.py             # 功能基因序列提取
-│   ├── HGT.py             # WAAFLE调用脚本
-│   ├── Megahit.py         # Megahit拼接
-│   ├── SPAdes.py          # SPAdes拼接
-│   ├── config/            # 配置模块
-│   ├── tool/              # 公共函数
-│   └── ...
-├── bin/
-│   └── BPtracer           # 主执行脚本
-├── README.md
-├── environment.yml        # Conda依赖环境
-└── ...
+```bash
+nohup bash BP.S02.ARGsAnno.A1.sh > A1.log 2>&1 &
 ```
 
+或通过 SGE/Slurm 提交：
+
+```bash
+qsub BP.S02.ARGsAnno.A1.sh
+sbatch BP.S02.ARGsAnno.A1.sh
+```
+
+---
+
+## 📘 结果说明（Output Interpretation）
 
 ## 🧬 主要项目结果说明
 
@@ -232,18 +244,9 @@ Tax.ARGs.Lineage.ppm.txt           # ARG基因的完整分类路径（Lineage）
 
 ```
 
+
 ---
 
-## 🔗 外部依赖
-
-请确保已安装以下工具，或使用内置 Conda 环境进行统一管理：
-
-- [Kraken2](https://ccb.jhu.edu/software/kraken2/)
-- [MEGAHIT](https://github.com/voutcn/megahit)
-- [SPAdes](https://github.com/ablab/spades)
-- [WAAFLE](https://github.com/biobakery/waafle)
-- BLAST+
----
 
 ## 📄 引用格式（如适用）
 
