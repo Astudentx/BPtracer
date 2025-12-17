@@ -248,15 +248,13 @@ Tax.ARGs.Lineage.ppm.txt           # ARG host-tracing with full taxonomic lineag
 
 ---
 
-## 📄 Citation (if applicable)
+## 📄 Citation
 
 If you use this tool in your research, please cite:
 
-> **BP-tracer: A metagenomic pipeline for tracing the multifarious biopollutome**
+> **BP-Tracer: A metagenomic pipeline for tracing the multifarious biopollutome**
 > Yaozhong Zhang, Gaofei Jiang
-> *XXXXX* (2025)
-> doi: [XXXXX](XXXXX)
-
+> (2025)
 ---
 
 ## 📬 Contact

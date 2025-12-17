@@ -11,3 +11,6 @@ Tests/Analysis/
 AI提示词.md
 gitadd.sh
 rm.sh
+.Rhistory
+.gitignore
+.vscode
