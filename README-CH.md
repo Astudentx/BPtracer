@@ -18,7 +18,7 @@ BPtracer 的核心设计思想为：
 
 ### 1. Tax 模块（Tax）
 
-基于 **Kraken2** 的物种注释，支持标准 Kraken2 数据库与 Pangenome 格式数据库（如 BPTax_V2）。
+基于 **Kraken2** 的物种注释，支持标准 Kraken2 数据库与 Pangenome 格式数据库（如 BPtax）。
 
 ### 2. 功能基因注释（BP / BP2）
 

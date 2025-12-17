@@ -16,7 +16,7 @@ The core design of BPtracer is:
 
 ### 1. Tax module (`Tax`)
 
-Taxonomic profiling based on **Kraken2**, supporting both standard Kraken2 databases and Pangenome-style databases (such as BPTax_V2).
+Taxonomic profiling based on **Kraken2**, supporting both standard Kraken2 databases and Pangenome-style databases (such as BPtax).
 
 ### 2. Functional gene annotation (`BP` / `BP2`)
 

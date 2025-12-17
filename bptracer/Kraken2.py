@@ -1,7 +1,7 @@
-import subprocess
 import textwrap
 from bptracer.BaseRunner import BaseRunner
 import os
+from bptracer import config
 
 class FastqStatRunner(BaseRunner):
     def build_command(self):
@@ -12,8 +12,8 @@ class FastqStatRunner(BaseRunner):
         cmd = textwrap.dedent(rf"""
         mkdir -p {statpath}
         cd {statpath}
-        java -jar  {config.FASTQSTAT_SOFTWARE}/FastqStat.jar -i {fqlist}   > stat.main.xls
-        python {config.Kraken2_MAPPING_SOFTWARE}/mybin/ProcessStat.py
+        java -jar  {config.FASTQ_STAT_SOFTWARE}/FastqStat.jar -i {fqlist}   > stat.main.xls
+        python {config.FASTQ_COMBINE_SOFTWARE}
         """)
         return cmd
                               
@@ -29,15 +29,15 @@ class Kraken2Runner(BaseRunner):
 
         cmd = textwrap.dedent(rf"""
         cd {config.Kraken2_OUTPUT_PATH}
-        {config.Kraken2_MAPPING_SOFTWARE}/kraken2 --db {config.Kraken2_DATABASE} --threads {config.Kraken2_THREADS} --quick --report-zero-counts --gzip-compressed --paired --output {id}.readinfo --report {id}.report {file1} {file2}
-        python {config.Kraken2_MAPPING_SOFTWARE}/kreport2mpa.py -r {id}.report -o {id}.mpa
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.D -l D
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.P -l P
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.C -l C
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.O -l O
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.F -l F
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.G -l G
-        python {config.Kraken2_MAPPING_SOFTWARE}/est_abundance.py -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.S -l S
+        {config.Kraken2_MAPPING_SOFTWARE} --db {config.Kraken2_DATABASE} --threads {config.Kraken2_THREADS} --quick --report-zero-counts --gzip-compressed --paired --output {id}.readinfo --report {id}.report {file1} {file2}
+        {config.KrakenTools_REPORT2MPA_SOFTWARE} -r {id}.report -o {id}.mpa
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.D -l D
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.P -l P
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.C -l C
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.O -l O
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.F -l F
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.G -l G
+        {config.Bracken_ESTABUNDANCE_SOFTWARE} -t 1 -k {config.Kraken2_DATABASE}/database150mers.kmer_distrib -i {id}.report -o {id}.report.S -l S
         # rm {id}.readinfo {id}.report
         """)
         return cmd
@@ -48,7 +48,7 @@ class Kraken2Runner2(BaseRunner):
         # 设置接口参数
         config = self.params.get('config')
         id_list = self.params.get('id_list')
-        lineage = self.params.get('lineage', 'F')  # 新增lineage参数，默认值F
+        lineage = self.params.get('lineage')
 
         
         id_list_D =  " ".join([s + ".report.D" for s in id_list])
@@ -64,38 +64,30 @@ class Kraken2Runner2(BaseRunner):
         
         cmd = textwrap.dedent(rf"""
         cd {config.Kraken2_OUTPUT_PATH}
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_D} --names {id_list2} -o taxonomy.D
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_P} --names {id_list2} -o taxonomy.P
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_C} --names {id_list2} -o taxonomy.C
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_O} --names {id_list2} -o taxonomy.O
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_F} --names {id_list2} -o taxonomy.F
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_G} --names {id_list2} -o taxonomy.G
-        python  {config.Kraken2_MAPPING_SOFTWARE}/combine_bracken_outputs.py --files {id_list_S} --names {id_list2} -o taxonomy.S
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_D} --names {id_list2} -o taxonomy.D
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_P} --names {id_list2} -o taxonomy.P
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_C} --names {id_list2} -o taxonomy.C
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_O} --names {id_list2} -o taxonomy.O
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_F} --names {id_list2} -o taxonomy.F
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_G} --names {id_list2} -o taxonomy.G
+        {config.Bracken_COMBINE_SOFTWARE} --files {id_list_S} --names {id_list2} -o taxonomy.S
 
-        # 界门纲目科属种复杂分析版本,需要stat.main.xls 
-        # perl  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-mergeStat-unclassfied-New.pl -prefix taxonomy -trim {trim_path}/stat.main.xls -tax {config.Kraken2_TAXLIST}  -out Final
+        # 界门纲目科属种复杂分析版本,需要stat.main.xls 这个不适用于大多数的版本
+        # perl  {config.BIN_PATH}/BPTracer/Kraken2/kraken2-mergeStat-unclassfied-New.pl -prefix taxonomy -trim {trim_path}/stat.main.xls -tax {config.Kraken2_TAXLIST}  -out Final
         
         # 界门纲目科属种简单版本
-        perl  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-mergeStat-New.pl -prefix taxonomy -tax {config.Kraken2_TAXLIST}  -out TaxAbu
+        perl  {config.BIN_PATH}/BPTracer/Kraken2/kraken2-mergeStat-New.pl -prefix taxonomy -tax {config.Kraken2_TAXLIST}  -out TaxAbu
         """)
         
         if lineage != "F":
             cmd += textwrap.dedent(rf"""
         # TaxID合并版本分析
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_D}  -l Kingdom  -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.D
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_P}  -l Phylum   -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.P
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_C}  -l Class    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.C
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_O}  -l Order    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.O
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_F}  -l Family   -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.F
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_G}  -l Genus    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.G
-        #python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_S}  -l Species  -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240519.txt -o TaxIDAbu.S
-
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_D}  -l Kingdom  -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.D
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_P}  -l Phylum   -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.P
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_C}  -l Class    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.C
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_O}  -l Order    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.O
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_F}  -l Family   -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.F
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_G}  -l Genus    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.G
-        python  {config.Kraken2_MAPPING_SOFTWARE}/mybin/kraken2-combineSample-TaxID.py -i {id_list_S}  -l Species  -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.S
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_D}  -l Kingdom  -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.D
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_P}  -l Phylum   -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.P
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_C}  -l Class    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.C
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_O}  -l Order    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.O
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_F}  -l Family   -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.F
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_G}  -l Genus    -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.G
+        {config.BIN_PATH}/BPTracer/Kraken2/kraken2-combineSample-TaxID.py -i {id_list_S}  -l Species  -n {id_list3} --taxonomy {config.Kraken2_DATABASE}/Kraken2.Taxonomy.refseq_240720.txt -o TaxIDAbu.S
         """)
         return cmd

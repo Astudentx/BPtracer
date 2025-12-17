@@ -20,8 +20,10 @@ from bptracer import inputList
 from bptracer import BP
 from bptracer import BP2
 from bptracer import HGT
+from bptracer import Assembly
 from bptracer import Megahit
 from bptracer import SPAdes
+from bptracer import download
 from bptracer import fileManager
 from bptracer.tool import load_config_module
 from bptracer import version
@@ -92,11 +94,11 @@ def build_parser() -> argparse.ArgumentParser:
     global_parent.add_argument(
         "--config", "-c",
         type=str,
-        default="bptracer.config",
+        default="bptracer.config_conda",
         help=(
             "Configuration module or file to load. Accepts either a Python module "
-            "path (e.g. 'bptracer.config') or a full filesystem path to a "
-            "configuration script (e.g. '/path/to/BPtracer/bptracer/config.py'). "
+            "path (e.g. 'bptracer.config_conda') or a full filesystem path to a "
+            "configuration script (e.g. '/path/to/BPtracer/bptracer/config_conda.py'). "
             "If not specified, the default 'bptracer.config' is used."
         ),
     )
@@ -149,27 +151,20 @@ def build_parser() -> argparse.ArgumentParser:
         "taxonomic composition analysis.\n"
         "\n"
         "Example:\n"
-        "  BPtracer Tax --file paired_fastq_list.txt --db BPTax_V2 --pwd /path/to/output\n"
+        "  BPtracer Tax --file paired_fastq_list.txt --db BPtax --pwd /path/to/output\n"
     )
-
-    Megahit_description = (
-        "Assemble metagenomic reads using MEGAHIT.\n"
+    Assembly_description = (
+        "Assemble metagenomic reads using MEGAHIT or SPAdes.\n"
         "\n"
         "This subcommand assembles paired-end metagenomic FASTQ reads into contigs\n"
-        "suitable for downstream annotation and HGT analysis.\n"
+        "for downstream BP-Tracer analyses. By default, MEGAHIT is used, but\n"
+        "SPAdes can be selected via the --assembler option.\n"
         "\n"
-        "Example:\n"
-        "  BPtracer Megahit --file paired_fastq_list.txt --pwd /path/to/output\n"
-    )
-
-    SPAdes_description = (
-        "Assemble metagenomic reads using SPAdes.\n"
+        "Example (MEGAHIT, default):\n"
+        "  BPtracer Assembly --file paired_fastq_list.txt --pwd /path/to/output\n"
         "\n"
-        "This subcommand assembles paired-end metagenomic FASTQ reads into\n"
-        "high-quality contigs for downstream BP-Tracer analyses.\n"
-        "\n"
-        "Example:\n"
-        "  BPtracer SPAdes --file paired_fastq_list.txt --pwd /path/to/output\n"
+        "Example (SPAdes):\n"
+        "  BPtracer Assembly --file paired_fastq_list.txt --assembler spades --pwd /path/to/output\n"
     )
 
     HGT_description = (
@@ -183,6 +178,14 @@ def build_parser() -> argparse.ArgumentParser:
         "\n"
         "Example:\n"
         "  BPtracer HGT --file contig_fasta_list.txt --pwd /path/to/output\n"
+    )
+
+    Download_description = (
+        "Download BP-Tracer databases (FUNC, HGT, TAX).\n"
+        "\n"
+        "Example:\n"
+        "  BPtracer Download --all\n"
+        "  BPtracer Download --FUNC --TAX\n"
     )
 
     # ---------------------- BP 子命令 ---------------------------
@@ -231,6 +234,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of threads used in BLAST stage.",
         default=4,
     )
+    
     bp2_req.add_argument(
         '--print',
         choices=['T', 'F'],
@@ -256,9 +260,9 @@ def build_parser() -> argparse.ArgumentParser:
         '--db', '-d',
         help=(
             "Database for Kraken2 classification. Options: "
-            "BPTax_V1, BPTax_V2, krakenDB-202212, krakenDB-202406."
+            "BPtax, krakenDB-202212, krakenDB-202406."
         ),
-        default="BPTax_V2",
+        default="BPtax",
     )
     tax_req.add_argument(
         '--pwd', '-o',
@@ -266,48 +270,45 @@ def build_parser() -> argparse.ArgumentParser:
         default="./",
     )
     tax_req.add_argument(
+        '--lineage', '-l',
+        choices=['T', 'F'],
+        default='F',
+        help="Output the lineage of taxonomy (T) or not (F).",
+    )
+        
+    tax_req.add_argument(
         '--print',
         choices=['T', 'F'],
         default='F',
         help="Print underlying commands (T) or not (F).",
     )
 
-    # ---------------------- SPAdes 子命令 -------------------------
+    # ---------------------- Assembly 子命令 ----------------------
 
-    spades_parser = add_subparser(subparsers, 'SPAdes', SPAdes_description, parents=[global_parent])
-    spades_req = spades_parser.add_argument_group('required arguments')
-    spades_req.add_argument(
+    assembly_parser = add_subparser(
+        subparsers,
+        'Assembly',
+        Assembly_description,
+        parents=[global_parent],
+    )
+    assembly_req = assembly_parser.add_argument_group('required arguments')
+    assembly_req.add_argument(
         '--file', '-f',
         help="List file of paired-end metagenomic FASTQ reads.",
         required=True,
     )
-    spades_req.add_argument(
+    assembly_req.add_argument(
         '--pwd', '-o',
         help="Output folder.",
         default="./",
     )
-    spades_req.add_argument(
-        '--print',
-        choices=['T', 'F'],
-        default='F',
-        help="Print underlying commands (T) or not (F).",
+    assembly_req.add_argument(
+        '--assembler', '-a',
+        choices=['megahit', 'spades'],
+        default='megahit',
+        help="Assembler to use: 'megahit' (default) or 'spades'.",
     )
-
-    # ---------------------- Megahit 子命令 ------------------------
-
-    megahit_parser = add_subparser(subparsers, 'Megahit', Megahit_description, parents=[global_parent])
-    megahit_req = megahit_parser.add_argument_group('required arguments')
-    megahit_req.add_argument(
-        '--file', '-f',
-        help="List file of paired-end metagenomic FASTQ reads.",
-        required=True,
-    )
-    megahit_req.add_argument(
-        '--pwd', '-o',
-        help="Output folder.",
-        default="./",
-    )
-    megahit_req.add_argument(
+    assembly_req.add_argument(
         '--print',
         choices=['T', 'F'],
         default='F',
@@ -326,10 +327,10 @@ def build_parser() -> argparse.ArgumentParser:
     hgt_req.add_argument(
         '--db', '-d',
         help=(
-            "Database for HGT classification. Options: RefseqPan2, chocophlan2, "
-            "UnigeneSet-waafledb.v1.fa, UnigeneSet-waafledb.v2.fa (from WAAFLE)."
+            "Database for HGT classification. Options:  "
+            "chocophlan2 (from WAAFLE), BPtarns(from BPtracer). default='BPtarns'"
         ),
-        default="RefseqPan2",
+        default="BPtarns",
     )
     hgt_req.add_argument(
         '--pwd', '-o',
@@ -341,6 +342,36 @@ def build_parser() -> argparse.ArgumentParser:
         choices=['T', 'F'],
         default='F',
         help="Print underlying commands (T) or not (F).",
+    )
+    hgt_req.add_argument(
+        '--length', '-l',
+        type=int,
+        default=1000,
+        help="Minimum contig length (bp) to keep before HGT analysis. Default: 1000.",
+    )
+
+    # ---------------------- Download 子命令 ----------------------------
+
+    download_parser = add_subparser(subparsers, 'Download', Download_description, parents=[global_parent])
+    download_parser.add_argument(
+        '--all',
+        action='store_true',
+        help="Download all databases (FUNC, HGT, TAX).",
+    )
+    download_parser.add_argument(
+        '--FUNC',
+        action='store_true',
+        help="Download FUNC database only (can be combined with others).",
+    )
+    download_parser.add_argument(
+        '--HGT',
+        action='store_true',
+        help="Download HGT database only (can be combined with others).",
+    )
+    download_parser.add_argument(
+        '--TAX',
+        action='store_true',
+        help="Download TAX database only (can be combined with others).",
     )
 
     return parser
@@ -386,6 +417,7 @@ def run_bp(args, config):
     """
 
     fileManager.mkdir(config.SHELL_PATH)
+    fileManager.mkdir(config.BP_OUTPUT_PATH)
 
     print(f"Shells set to: {config.SHELL_PATH}")
     print(f"Results set to: {config.BP_OUTPUT_PATH}")
@@ -441,8 +473,83 @@ def run_bp(args, config):
         "S02_GeneAnno": s02_scripts,
     }
 
-
 def run_bp2(args, config):
+    """
+    BP2 后处理流程（step 2）：
+    S03_ExtractAndBlast :
+        - BP2_STRATEGY=chunk  : 合并 Final.extracted.fa 后按 BP_EXTRACTEDFA_WINDOW 切块并 BLAST
+        - BP2_STRATEGY=sample : 逐样品 extracted.fa 直接 BLAST
+    S04_MergeBlast      : merge BLAST results per geneType
+    """
+
+    gene_types = (
+        args.GeneType.split(',')
+        if args.GeneType != 'ALL'
+        else ['ARGs', 'MGEs', 'MRGs', 'VFs', 'SGs']
+    )
+
+    # 读取策略，默认为 chunk（保持向后兼容）
+    strategy = getattr(config, "BP2_STRATEGY", "chunk")
+    strategy = str(strategy).lower()
+
+    if args.print == 'T':
+        print("This message is printed because --print=T")
+    else:
+        print("Printing is disabled because --print=F")
+
+    # 分阶段脚本列表
+    s03_scripts = []  # S03: BLAST（BP.S03.*.sh）
+    s04_scripts = []  # S04: 合并 BLAST 结果（BP.S04.{gtype}.Merge.sh）
+
+    for gtype in gene_types:
+        print(f"Processing gene type: {gtype} (BP2_STRATEGY={strategy})")
+
+        # 1) ExtractedFaFiles：准备 fasta & 生成对应脚本（S03）
+        soft_runner = BP2.ExtractedFaFiles(
+            config=config, geneType=gtype, thread=args.thread
+        )
+        soft_runner.process_files()
+
+        for i, split_fa in enumerate(soft_runner.split_fa):
+            # 生成命令，缓存到 BaseRunner 内部
+            soft_runner.build_command(index=i)
+            soft_runner.print_command(should_print=args.print, index=i)
+
+            # 根据策略决定脚本命名
+            if strategy == "sample":
+                # 假定 extracted.fa 结构为 .../{sampleID}/extracted.fa
+                sample_id = os.path.basename(os.path.dirname(split_fa)) or f"sample{i}"
+                script_name = f"BP.S03.{gtype}.{sample_id}.sh"
+            else:
+                # 默认视为 chunk 模式
+                # 注意：按你的要求保留 'chunck' 这个拼写
+                script_name = f"BP.S03.{gtype}.chunck{i}.sh"
+
+            script_path = os.path.join(config.SHELL_PATH, script_name)
+
+            # 生成脚本
+            soft_runner.generate_script(script_path, index=i)
+            s03_scripts.append(script_path)
+
+            print(f"Generated script for file {split_fa}: {script_path}")
+
+        # 2) CatBlastFiles：合并 BLAST 结果（S04）
+        soft_runner = BP2.CatBlastFiles(config=config, geneType=gtype)
+        soft_runner.process_files()
+        soft_runner.build_command()
+        soft_runner.print_command(should_print=args.print)
+
+        merge_script = os.path.join(config.SHELL_PATH, f"BP.S04.{gtype}.Merge.sh")
+        soft_runner.generate_script(merge_script)
+        s04_scripts.append(merge_script)
+
+    # 返回分阶段结构，交给 main() 做按阶段顺序的 auto-run
+    return {
+        "S03_ExtractAndBlast": s03_scripts,
+        "S04_MergeBlast": s04_scripts,
+    }
+    
+def run_bp2_bak(args, config):
     """
     BP2 后处理流程（step 2）：
     S03_ExtractAndBlast : split fasta & run BLAST in chunks
@@ -538,13 +645,13 @@ def run_tax(args, config):
             config=config, id=ID, file1=file1, file2=file2
         )
         soft_runner.print_command(should_print=args.print)
-        script_path = os.path.join(config.SHELL_PATH, f"Tax.S01.Kraken2.{ID}.sh")
+        script_path = os.path.join(config.SHELL_PATH, f"Tax.S01.Kraken2.{args.db}.{ID}.sh")
         soft_runner.generate_script(script_path)
         s01_scripts.append(script_path)
 
     # S02：合并 Kraken2 结果
     s02_scripts = []
-    soft_runner = Kraken2.Kraken2Runner2(config=config, id_list=dataList.id)
+    soft_runner = Kraken2.Kraken2Runner2(config=config, id_list=dataList.id, lineage=args.lineage)
     soft_runner.print_command(should_print=args.print)
     merge_script = os.path.join(config.SHELL_PATH, "Tax.S02.Kraken2.Merge.sh")
     soft_runner.generate_script(merge_script)
@@ -617,6 +724,54 @@ def run_megahit(args, config):
 
     return all_scripts
 
+def run_assembly(args, config):
+    """通用组装脚本生成：根据 --assembler 选择 MEGAHIT 或 SPAdes。"""
+    assembler = (args.assembler or "megahit").lower()
+
+    # 准备目录
+    fileManager.mkdir(config.SHELL_PATH)
+    if assembler == "megahit":
+        out_path = config.Megahit_OUTPUT_PATH
+    elif assembler == "spades":
+        out_path = config.SPAdes_OUTPUT_PATH
+    else:
+        raise ValueError(f"Unsupported assembler: {assembler}")
+
+    fileManager.mkdir(out_path)
+
+    print(f"Shells set to: {config.SHELL_PATH}")
+    print(f"Results set to: {out_path}")
+    print(f"Assembler: {assembler}")
+
+    dataList = inputList.read_paired_list(args.file)
+
+    all_scripts = []
+    for i in range(dataList.number):
+        ID = dataList.id[i]
+        file1 = dataList.file1[i]
+        file2 = dataList.file2[i]
+
+        soft_runner = Assembly.AssemblyRunner(
+            config=config,
+            id=ID,
+            file1=file1,
+            file2=file2,
+            assembler=assembler,
+        )
+        soft_runner.print_command(should_print=args.print)
+
+        # 保持原有脚本命名风格（便于与你现在的下游兼容）
+        prefix = "Megahit" if assembler == "megahit" else "SPAdes"
+        script_path = os.path.join(
+            config.SHELL_PATH,
+            f"{prefix}.S01.Assambly.{ID}.sh",
+        )
+        soft_runner.generate_script(script_path)
+        all_scripts.append(script_path)
+
+    return all_scripts
+
+
 
 def run_hgt(args, config):
     """HGT 检测脚本生成（单阶段，每个 contig 集合一个脚本）。"""
@@ -636,9 +791,14 @@ def run_hgt(args, config):
     all_scripts = []
     for i in range(dataList.number):
         ID = dataList.id[i]
-        file1 = dataList.file1[i]
+        file1 = os.path.realpath(dataList.file1[i])
 
-        soft_runner = HGT.HGTRunner(config=config, id=ID, file1=file1)
+        soft_runner = HGT.HGTRunner(
+            config=config,
+            id=ID,
+            file1=file1,
+            length=args.length,
+        )
         soft_runner.print_command(should_print=args.print)
         script_path = os.path.join(
             config.SHELL_PATH, f"HGT.S01.{args.db}.{ID}.sh"
@@ -691,12 +851,15 @@ def main():
         scripts = run_bp2(args, config)
     elif args.subparser_name == 'Tax':
         scripts = run_tax(args, config)
-    elif args.subparser_name == 'SPAdes':
-        scripts = run_spades(args, config)
-    elif args.subparser_name == 'Megahit':
+    elif args.subparser_name == 'Assembly':
         scripts = run_megahit(args, config)
     elif args.subparser_name == 'HGT':
         scripts = run_hgt(args, config)
+    elif args.subparser_name == 'Download':
+        # Download 不生成脚本，直接执行；若返回非 0 表示失败
+        exit_code = download.run_download(args)
+        if exit_code != 0:
+            sys.exit(exit_code)
     else:
         parser.print_help()
         sys.exit(1)

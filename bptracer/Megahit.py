@@ -11,7 +11,7 @@ class MegahitRunner(BaseRunner):
 
         cmd = textwrap.dedent(rf"""
         cd {config.Megahit_OUTPUT_PATH}
-        {config.BIN_PATH}/megahit/megahit -1 {file1} -2 {file2} --min-contig-len 500 -t 40 -o ./{id}
+        {config.Megahit_MAPPING_SOFTWARE} -1 {file1} -2 {file2} --min-contig-len {config.Megahit_MIN_LENGTH} -t {config.Megahit_THREADS} -o ./{id}
         perl {config.BIN_PATH}/BPTracer/renamefa.pl ./{id}/final.contigs.fa {id} {id}.contig.ok.fa
         perl {config.BIN_PATH}/BPTracer/deal_fa.pl -format 3 {id}.contig.ok.fa | perl -e 'while(<>){{chomp;@a=split; if($a[1] > 10000){{$a[1]=10000;}} print "$a[0]\t$a[1]\n";}}' > {id}.contig.ok.fa.chrlist
         #perl {config.BIN_PATH}/BPTracer/fa_fq_len_bar.pl {id}.contig.ok.fa.chrlist {id}.contig.length.pdf contig

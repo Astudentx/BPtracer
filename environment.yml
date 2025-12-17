@@ -1,31 +1,37 @@
-name: BPtracer
+name: BPtracerV1.1.2
 channels:
   - conda-forge
   - bioconda
   - defaults
+
 dependencies:
-  # ---- Python cor environments ----
-  - python=3.9.21
-  - numpy=2.0.2
+  # ---- Python core environment ----
+  - python=3.9
+  - numpy=1.26
   - pandas
   - pip
-  # ---- Python research/network-related packages----
+
+  # ---- Python research / network related packages ----
   - biopython=1.84
   - requests
   - mygene=3.2.2
   - gprofiler-official=1.0.0
   - tqdm
+
   # ---- 外部生物信息学工具（通过 bioconda 安装）----
-  - diamond=0.9.24
-  - spades=3.15.3
-  - samtools=1.14
+  - diamond=2.1.8
+  - spades
+  - samtools=1.20
   - minimap2
-  - blast=2.3.0
-  - megahit=1.1.1
-  - kraken2=2.0.6_beta      # 如解析失败，可改为不指定版本
+  - blast              # 不再钉死 2.3.0/2.5.0，交给 bioconda 选当前稳定版
+  - megahit=1.2.9
+  - kraken2
+  - bracken
+  - KrakenTools
+
   # ---- Perl ----
   - perl
-  
+
   # ---- 通过 pip 安装的 Python 包 ----
   - pip:
       - waafle==1.1.0

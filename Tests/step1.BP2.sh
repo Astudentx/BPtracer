@@ -1,0 +1,1 @@
+ python3 ../BPtracer.py BP2 --file clean.fq.list  --pwd Analysis/ --auto-run
