@@ -84,7 +84,7 @@ python3 /mnt/sdb/zhangyz/bin/BPtracer/bin/BPTracer/GenerateSubTable.py \\
 
 # 后续处理
 python3 /mnt/sdb/zhangyz/bin/BPtracer/bin/BPTracer/GeneAddTax.py \\
-  /mnt/sdb/zhangyz/bin/BPtracer/db/BPTracer/Gene/species.info.txt \\
+  /mnt/sdb/zhangyz/bin/BPtracer/db/BPTracer/Gene/species.Tax.txt \\
   {output_dir}/OUT.{args.base_output}.ppm.txt \\
   {output_dir}/Tax.{args.base_output}.ppm.txt
 

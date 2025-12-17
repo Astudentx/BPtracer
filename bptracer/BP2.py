@@ -1,11 +1,9 @@
-
 import subprocess
 import textwrap
 from bptracer.BaseRunner import BaseRunner
 import os
 import pandas as pd
 import glob
-
 
 def get_gene_path(geneType, config):
     if geneType == "ARGs":
@@ -33,9 +31,124 @@ def get_gene_path(geneType, config):
     return genePath, geneDB, geneStructure
 
 
-        
+
 class ExtractedFaFiles(BaseRunner):
     def process_files(self):
+        """
+        根据 BP2_STRATEGY 选择 BLAST 粒度：
+
+        - chunk  策略（默认）：合并所有样品 extracted.fa 为 Final.extracted.fa，
+          再按 BP_EXTRACTEDFA_WINDOW 切分成 temp.*.fa，逐块 BLAST。
+        - sample 策略：仍然合并生成 Final.extracted.fa 以兼容下游，但不再切分；
+          直接对每个样品自己的 extracted.fa 跑 BLAST。
+        """
+        config = self.params.get("config")
+        geneType = self.params.get("geneType")
+        thread = self.params.get("thread")
+        genePath, geneDB, geneStructure = get_gene_path(geneType, config)
+
+        # 输出路径
+        final_extracted_path = os.path.join(config.BP_OUTPUT_PATH, genePath)
+        final_extracted_file = os.path.join(final_extracted_path, "Final.extracted.fa")
+
+        # 1) 收集所有样品的 extracted.fa
+        extracted_files = sorted(
+            glob.glob(
+                os.path.join(final_extracted_path, "**", "extracted.fa"),
+                recursive=True,
+            )
+        )
+        if not extracted_files:
+            raise FileNotFoundError(
+                f"在 {final_extracted_path} 下未找到任何 extracted.fa 文件，"
+                f"请检查上游步骤是否生成成功。"
+            )
+
+        # 2) 合并所有 extracted.fa -> Final.extracted.fa（两种策略都需要，兼容下游）
+        os.makedirs(final_extracted_path, exist_ok=True)
+        with open(final_extracted_file, "w") as final_out:
+            for filepath in extracted_files:
+                with open(filepath, "r") as infile:
+                    for line in infile:
+                        final_out.write(line)
+        print(f"所有 {genePath} 中的 extracted.fa 文件已合并到 {final_extracted_file}")
+
+        # 选择策略：chunk（原始逻辑）或 sample（按样品 BLAST）
+        strategy = getattr(config, "BP2_STRATEGY", "chunk")
+        strategy = str(strategy).lower()
+
+        self.split_fa = []
+        self.split_m8 = []
+
+        if strategy == "sample":
+            # 每个样品一个 BLAST 任务
+            for fa_path in extracted_files:
+                m8_path = fa_path + ".m8"
+                self.split_fa.append(fa_path)
+                self.split_m8.append(m8_path)
+
+            print(
+                f"[BP2_STRATEGY=sample] {geneType}: 共检测到 "
+                f"{len(self.split_fa)} 个样品的 extracted.fa，将逐个文件运行 BLAST。"
+            )
+
+        elif strategy == "chunk":
+            # 原始：按序列条数切块
+            sequence_counter = 0
+            file_counter = 0
+            split_file = None
+
+            with open(final_extracted_file, "r") as infile:
+                for line in infile:
+                    if line.startswith(">"):  # 新的序列起点
+                        if sequence_counter % config.BP_EXTRACTEDFA_WINDOW == 0:
+                            # 关闭前一个分块文件
+                            if split_file:
+                                split_file.close()
+
+                            split_fa = os.path.join(
+                                final_extracted_path, f"temp.{file_counter}.fa"
+                            )
+                            split_m8 = split_fa + ".m8"
+                            self.split_fa.append(split_fa)
+                            self.split_m8.append(split_m8)
+
+                            split_file = open(split_fa, "w")
+                            file_counter += 1
+                        sequence_counter += 1
+
+                    # 理论上第一行一定是 '>'，但防御性判断一下
+                    if split_file is not None:
+                        split_file.write(line)
+
+            if split_file:
+                split_file.close()
+
+            print(
+                f"[BP2_STRATEGY=chunk] 文件已分割为 {file_counter} 个部分，"
+                f"每部分最多包含 {config.BP_EXTRACTEDFA_WINDOW} 条序列。"
+            )
+
+        else:
+            raise ValueError(
+                f"Unsupported BP2_STRATEGY: {config.BP2_STRATEGY!r}，"
+                "请使用 'chunk' 或 'sample'。"
+            )
+
+        # 3) 输出所有 m8 路径列表，供 S04 合并使用（两种策略通用）
+        output_file = os.path.join(final_extracted_path, f"Final.{geneType}.m8.list")
+        with open(output_file, "w") as f:
+            for path in self.split_m8:
+                f.write(path + "\n")
+        print(f"所有 {geneType} 的 m8 文件路径已保存到 {output_file}")
+
+        # 一些在其他地方可能用到的成员变量
+        self.final_extracted_path = final_extracted_path
+        self.final_extracted_file = final_extracted_file
+        self.file_counter = len(self.split_fa)
+
+
+    def process_files_bak(self):
         config = self.params.get('config')
         geneType = self.params.get('geneType')
         thread = self.params.get('thread')
@@ -106,7 +219,7 @@ class ExtractedFaFiles(BaseRunner):
         self.file_counter = file_counter
     
     def build_command(self, index):
-        """生成针对单个分割文件的命令。"""
+        """针对单个分块 / 单个样品 extracted.fa 的 BLAST 命令。"""
         config = self.params.get('config')
         geneType = self.params.get('geneType')
         thread = self.params.get('thread')
@@ -115,77 +228,13 @@ class ExtractedFaFiles(BaseRunner):
         
         split_fa = self.split_fa[index]
         split_m8 = self.split_m8[index]
-        #output_m8 = os.path.join(self.final_extracted_path, f"temp.{index}.fa.m8")
+
         cmd = textwrap.dedent(rf"""
         cd {self.final_extracted_path}
         {config.BP_BLAST_SOFTWARE} -query {split_fa} -out {split_m8} -db {geneDB} -evalue 1e-7 -num_threads {thread} -outfmt 6 -max_target_seqs 1
         """).strip()
         return cmd
 
-
-
-#class CatBlastFiles(BaseRunner):
-#    def build_command(self):
-#        config = self.params.get('config')
-#        geneType = self.params.get('geneType')
-#        genePath, geneDB, geneStructure  = get_gene_path(geneType,config)
-        
-#        script_path = os.path.join(config.SHELL_PATH, f"S04.{geneType}_merge.sh")
-#        final_extracted_path = os.path.join(config.BP_OUTPUT_PATH, genePath)
-#        final_output_file = os.path.join(config.BP_OUTPUT_PATH, genePath, f"Final.{geneType}.blast.m8")
-#        output_m8_list_path = os.path.join(config.BP_OUTPUT_PATH, genePath, f"Final.{geneType}.m8.list")
-#        # 读取 m8 文件列表 (无标题文件)
-#        try:
-#            m8_list = pd.read_csv(output_m8_list_path, sep="\t", header=None)  # 无标题时 header=None
-#        except Exception as e:
-#            raise FileNotFoundError(f"无法读取 {output_m8_list_path} 文件: {e}")
-        
-#                # 获取所有路径
-#        m8_paths = m8_list[0].tolist()
-
-#        # 检查路径有效性
-#        for path in m8_paths:
-#            if not os.path.exists(path):
-#                raise FileNotFoundError(f"文件 {path} 不存在，请检查 {output_m8_list_path}。")
-        
-        
-#        # 生成合并脚本
-#        with open(script_path, "w", encoding="utf-8") as script_file:
-#            script_file.write(f"cd  {final_extracted_path}\n")
-#            # 循环写成cat脚本
-#            for idx, m8_path in enumerate(m8_paths):
-#                if idx == 0:  # 第一个文件，使用 >
-#                    script_file.write(f"cat {m8_path} > {final_output_file}\n")
-#                else:  # 其余文件，使用 >>
-#                    script_file.write(f"cat {m8_path} >> {final_output_file}\n")
-                    
-            
-#            cmd1 = textwrap.dedent(rf"""
-#            python3 {config.BIN_PATH}/BPTracer/MergeMeta.py \
-#                -p {config.BP_OUTPUT_PATH}/{genePath}  \
-#                -n meta_data_online.txt \
-#                -o Final.meta_data_online.txt
-#            """).strip()  # 删除可能多余的空白行
-                        
-#            cmd2 = textwrap.dedent(rf"""
-#            python3 {config.BIN_PATH}/BPTracer/GeneAbundance.py \
-#                -i {final_output_file} \
-#                -m Final.meta_data_online.txt \
-#                -p OUT.{geneType} \
-#                -db {geneDB} \
-#                -s {geneStructure} \
-#                -o {final_extracted_path} 
-#            """).strip()  # 删除可能多余的空白行
-            
-
-#            script_file.write(cmd1 + "\n")  # 确保每一行都以换行符结束
-#            script_file.write(cmd2 + "\n")  # 确保每一行都以换行符结束
-        
-#        print(f"合并脚本已生成: {script_path}")
-#        print(f"目标合并文件: {final_output_file}")
-        
-#        # 返回生成的脚本路径
-#        return f"bash {script_path}"
 
 class CatBlastFiles(BaseRunner):
     def process_files(self):

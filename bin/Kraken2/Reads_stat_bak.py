@@ -95,10 +95,10 @@ def process_fq_list(fq_list_path, output_path, num_threads):
 
 
 def main():
-    # Define command-line arguments
+    # Define command-line argumentsp="Path to the fq.list file.")
+    parser.add_argument("--output", required=True, h
     parser = argparse.ArgumentParser(description="Calculate Total_Reads_Pair and Total_Reads from an fq.list file.")
-    parser.add_argument("--file", required=True, help="Path to the fq.list file.")
-    parser.add_argument("--output", required=True, help="Path to save the output results as a TSV file.")
+    parser.add_argument("--file", required=True, helelp="Path to save the output results as a TSV file.")
     parser.add_argument("--threads", type=int, default=4, help="Number of threads to use (default: 4).")
     
     args = parser.parse_args()

@@ -74,15 +74,26 @@ def set_output_path(pwd=None):
 
 
 # ====================== FastqStat ======================
-FASTQSTAT_SOFTWARE =  os.path.join(BIN_PATH, 'FastqStat')
+FASTQ_STAT_SOFTWARE =  os.path.join(BIN_PATH, 'BPTracer/FastqStat')
+FASTQ_COMBINE_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/Kraken2/ProcessStat.py")
+
+
+
+# ====================== KrakenTools 相关 ======================
+KrakenTools_REPORT2MPA_SOFTWARE = os.path.join("kreport2mpa.py")
+
+# ====================== Bracken 相关 ======================
+Bracken_ESTABUNDANCE_SOFTWARE = os.path.join("est_abundance.py")
+Bracken_COMBINE_SOFTWARE = os.path.join("combine_bracken_outputs.py")
 
 
 # ====================== Kraken2 相关 ======================
 # 默认 kraken2 软件路径和线程数
-Kraken2_MAPPING_SOFTWARE = os.path.join(BIN_PATH, "Kraken2")
+Kraken2_MAPPING_SOFTWARE = os.path.join( "kraken2")
+
 Kraken2_THREADS = 50  # 默认线程数
 # 默认 kraken2 数据库及物种列表
-Kraken2_DATABASE = os.path.join(DATABASE_PATH, "BPtax", "BPtax_V1.1.2")
+Kraken2_DATABASE = os.path.join(DATABASE_PATH, "TAX", "BPtax")
 Kraken2_TAXLIST = os.path.join(Kraken2_DATABASE, "tax.list")
 
 def set_kraken2_database(database=None):
@@ -98,82 +109,93 @@ def set_kraken2_database(database=None):
     """
     global Kraken2_DATABASE, Kraken2_TAXLIST
     if database is None:
-        Kraken2_DATABASE = os.path.join(DATABASE_PATH, 'BPtax','BPtax_V1.1.2')
+        Kraken2_DATABASE = os.path.join(DATABASE_PATH, 'TAX','BPtax')
         Kraken2_TAXLIST = os.path.join(Kraken2_DATABASE, 'tax.list')
     else:
-        Kraken2_DATABASE = os.path.join(DATABASE_PATH, "BPtax", database)
+        Kraken2_DATABASE = os.path.join(DATABASE_PATH, "TAX", database)
         Kraken2_TAXLIST = os.path.join(Kraken2_DATABASE, 'tax.list')
 
 
 
-# ====================== SPAdes 相关 ======================
-SPAdes_MAPPING_SOFTWARE = os.path.join(BIN_PATH, 'SPAdes-3.15.3')
-SPAdes_THREADS = 140
-SPAdes_MEMORY = 400
 
 # ====================== BP-Tracer 主流程软件 ======================
-BP_SAMTOOLS_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/samtools")
-BP_DIAMOND_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/diamond blastx")
-BP_BLAST_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/blastx")
+BP_SAMTOOLS_SOFTWARE = os.path.join("samtools")
+BP_DIAMOND_SOFTWARE = os.path.join("diamond blastx")
+BP_BLAST_SOFTWARE = os.path.join("blastx")
 
 BP_FQ2FA_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/Fq2fa.pl")
 BP_FQ2FA_SOFTWARE2 = "seqtk" # 提供第二种方案1
-BP_MINIMAP2 = os.path.join(BIN_PATH,"BPTracer/minimap2")
+BP_MINIMAP2 = os.path.join("minimap2")
 
 BP_EXTREA_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/extract_usearch_reads.pl")
-# BP_MERGEFA_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/merge_extracted_fa_update_metadate.v2.3.pl")
 BP_MERGEFA_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/MergeFa.py")
-BP_16S_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/gg85_yinxiaole.fasta.mmi')
-BP_USCMG_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/KO30_DIAMOND.dmnd')
-BP_USCMG_LIST = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/all_KO30_name.list')
+BP_16S_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/gg85_yinxiaole.fasta.mmi')
+BP_USCMG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/KO30_DIAMOND.dmnd')
+BP_USCMG_LIST = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/all_KO30_name.list')
 
-"""BP-Tracer Old USCMG databases"""
-BP_USCMG_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/diamond0.8.16 blastx")
-BP_USCMG_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/KO30_DIAMOND.0.8.16.dmnd')
+"""BP-Tracer Old USCMG databases""" 
+# BP_USCMG_SOFTWARE = os.path.join(BIN_PATH,"BPTracer/diamond0.8.16 blastx")
+# BP_USCMG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/KO30_DIAMOND.0.8.16.dmnd')
+BP_USCMG_SOFTWARE = os.path.join("diamond blastx")
+BP_USCMG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/KO30_DIAMOND.dmnd')
 
+# ====================== BP-Tracer 分析策略 ======================
+BP2_STRATEGY = "sample"  # "sample" 或 "chunk"
 
 # ====================== BP-Tracer 功能基因数据库 ======================
 
 BP_EXTRACTEDFA_WINDOW = 200000
 BP_META_LIBRARY_SIZE = 300
-BP_TAX_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/species.Tax.txt')
+BP_TAX_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/species.Tax.txt')
 
 # DIAMOND 数据库
-BP_ARG_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-ARG.dmnd')
-BP_MGE_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-MGE.dmnd')
-BP_MRG_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-MRG.dmnd')
-BP_VFs_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-VFs.dmnd')
-BP_SGs_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-SGs.dmnd')
+BP_ARG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-ARG.dmnd')
+BP_MGE_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-MGE.dmnd')
+BP_MRG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-MRG.dmnd')
+BP_VFs_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-VFs.dmnd')
+BP_SGs_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-SGs.dmnd')
 # 功能基因结构信息
-BP_ARG_STRUCTURE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-ARG.list')
-BP_MGE_STRUCTURE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-MGE.list')
-BP_MRG_STRUCTURE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-MRG.list')
-BP_VFs_STRUCTURE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-VFs.list')
-BP_SGs_STRUCTURE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-SGs.list')
+BP_ARG_STRUCTURE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-ARG.list')
+BP_MGE_STRUCTURE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-MGE.list')
+BP_MRG_STRUCTURE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-MRG.list')
+BP_VFs_STRUCTURE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-VFs.list')
+BP_SGs_STRUCTURE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-SGs.list')
 # BLAST 使用的氨基酸序列库
-BP_BLASTARG_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-ARG.faa')
-BP_BLASTMGE_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-MGE.faa')
-BP_BLASTMRG_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-MRG.faa')
-BP_BLASTVFs_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-VFs.faa')
-BP_BLASTSGs_DATABASE = os.path.join(DATABASE_PATH, 'BPfunc/BPfunc_V1.1.2/Gene-SGs.faa')
+BP_BLASTARG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-ARG.faa')
+BP_BLASTMGE_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-MGE.faa')
+BP_BLASTMRG_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-MRG.faa')
+BP_BLASTVFs_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-VFs.faa')
+BP_BLASTSGs_DATABASE = os.path.join(DATABASE_PATH, 'FUNC/BPfunc/Gene-SGs.faa')
 
 # Profile 阈值
 BP_LENGTH_THRESHOLD = 25  
 BP_IDENTITY_THRESHOLD = 80  
 BP_EVALUE_THRESHOLD = 1E-7
 
+
+# ====================== SPAdes 相关 ======================
+SPAdes_MAPPING_SOFTWARE = os.path.join("spades.py")
+SPAdes_THREADS = 140
+SPAdes_MEMORY = 400
+
+# ====================== Megahit 相关 ======================
+Megahit_MAPPING_SOFTWARE = os.path.join("megahit")
+Megahit_THREADS = 40
+Megahit_MIN_LENGTH = 500
+
 # ====================== HGT (WAAFLE) 相关 ======================
 # 默认 HGT 数据库：UnigeneSet-waafledb.v2.fa
-BP_HGT_DATABASE  = os.path.join(DATABASE_PATH, 'BPtarns/RefseqPan2/RefseqPan2')
-BP_HGT_STRUCTURE = os.path.join(DATABASE_PATH, 'BPtarns/RefseqPan2/RefseqPan2_taxonomy.tsv')
+FILTER_SOFTWARE =  os.path.join(BIN_PATH,"BPTracer/FilterContigsByLength.py")
+BP_HGT_DATABASE  = os.path.join(DATABASE_PATH, 'HGT/BPtrans/BPtrans')
+BP_HGT_STRUCTURE = os.path.join(DATABASE_PATH, 'HGT/BPtrans/BPtrans_taxonomy.tsv')
 
 def set_HGT_database(database=None):
     global BP_HGT_DATABASE, BP_HGT_STRUCTURE
     if database is None:
-        BP_HGT_DATABASE  = os.path.join(DATABASE_PATH, 'BPtarns/RefseqPan2/RefseqPan2')
-        BP_HGT_STRUCTURE = os.path.join(DATABASE_PATH, 'BPtarns/RefseqPan2/RefseqPan2_taxonomy.tsv')
+        BP_HGT_DATABASE  = os.path.join(DATABASE_PATH, 'HGT/BPtrans/BPtrans')
+        BP_HGT_STRUCTURE = os.path.join(DATABASE_PATH, 'HGT/BPtrans/BPtrans_taxonomy.tsv')
     else:
-        BP_HGT_DATABASE  = os.path.join(DATABASE_PATH, 'BPtarns/',database,database)
-        BP_HGT_STRUCTURE = os.path.join(DATABASE_PATH, 'BPtarns/', database, f"{database}_taxonomy.tsv")
+        BP_HGT_DATABASE  = os.path.join(DATABASE_PATH, 'HGT/',database,database)
+        BP_HGT_STRUCTURE = os.path.join(DATABASE_PATH, 'HGT/', database, f"{database}_taxonomy.tsv")
 
 

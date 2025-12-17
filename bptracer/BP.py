@@ -43,9 +43,7 @@ class GeneAnno(BaseRunner):
 
         cmd = textwrap.dedent(rf"""
         cd {config.BP_OUTPUT_PATH}; mkdir -p {genePath}/{id}; cd {genePath}/{id}
-        # 链接统计文件
-        #find {config.BP_OUTPUT_PATH}/00.DataStat/{id}/ -type f ! -name "*.fq" ! -name "*.fastaq" ! -name "*.fq.gz" ! -name "*.fastaq.gz" -exec ln -s {{}} ./ \;
-        
+
         # 功能基因比对
         {config.BP_DIAMOND_SOFTWARE} -d {geneDBDiamond} -q {config.BP_OUTPUT_PATH}/00.DataStat/{id}/{id}_1.fa -o .//{id}_1.us -e 10 -p 40 -k 1 --id 60
         {config.BP_DIAMOND_SOFTWARE} -d {geneDBDiamond} -q {config.BP_OUTPUT_PATH}/00.DataStat/{id}/{id}_2.fa -o .//{id}_2.us -e 10 -p 40 -k 1 --id 60

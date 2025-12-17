@@ -18,7 +18,7 @@ BPtracer 的核心设计思想为：
 
 ### 1. Tax 模块（Tax）
 
-基于 **Kraken2** 的物种注释，支持标准 Kraken2 数据库与 Pangenome 格式数据库（如 BPTax_V2）。
+基于 **Kraken2** 的物种注释，支持标准 Kraken2 数据库与 Pangenome 格式数据库（如 BPtax）。
 
 ### 2. 功能基因注释（BP / BP2）
 
@@ -248,13 +248,12 @@ Tax.ARGs.Lineage.ppm.txt           # ARG基因的完整分类路径（Lineage）
 ---
 
 
-## 📄 引用格式（如适用）
+## 📄 引用格式
 
 如您在研究中使用本工具，请引用以下文章/作者信息：
-> **BP-tracer: A metagenomic pipeline for tracing the multifarious biopollutome**
+> **BP-Tracer: A metagenomic pipeline for tracing the multifarious biopollutome**
 > Yaozhong Zhang, Gaofei Jiang
-> _XXXXX_ (2025)
-> doi: [XXXXX](XXXXX)
+> (2025)
 ---
 
 ## 📬 联系方式

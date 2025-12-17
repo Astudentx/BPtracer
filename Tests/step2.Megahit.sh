@@ -1,0 +1,1 @@
+python3 ../BPtracer.py  Megahit --file clean.fq.list  --pwd data/Contigs2/ --auto-run  --max-workers 3

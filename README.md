@@ -16,7 +16,7 @@ The core design of BPtracer is:
 
 ### 1. Tax module (`Tax`)
 
-Taxonomic profiling based on **Kraken2**, supporting both standard Kraken2 databases and Pangenome-style databases (such as BPTax_V2).
+Taxonomic profiling based on **Kraken2**, supporting both standard Kraken2 databases and Pangenome-style databases (such as BPtax).
 
 ### 2. Functional gene annotation (`BP` / `BP2`)
 
@@ -248,15 +248,13 @@ Tax.ARGs.Lineage.ppm.txt           # ARG host-tracing with full taxonomic lineag
 
 ---
 
-## 📄 Citation (if applicable)
+## 📄 Citation
 
 If you use this tool in your research, please cite:
 
-> **BP-tracer: A metagenomic pipeline for tracing the multifarious biopollutome**
+> **BP-Tracer: A metagenomic pipeline for tracing the multifarious biopollutome**
 > Yaozhong Zhang, Gaofei Jiang
-> *XXXXX* (2025)
-> doi: [XXXXX](XXXXX)
-
+> (2025)
 ---
 
 ## 📬 Contact

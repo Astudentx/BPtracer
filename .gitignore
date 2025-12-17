@@ -5,3 +5,11 @@ bptracer/__pycache__/
 *.pyc
 *.bak*
 examples/
+bin/BPTracer/Archive/
+Archive/
+Tests/Analysis/
+AI提示词.md
+gitadd.sh
+rm.sh
+.Rhistory
+.vscode

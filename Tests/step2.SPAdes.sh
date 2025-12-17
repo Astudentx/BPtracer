@@ -1,0 +1,1 @@
+python3 ../BPtracer.py  SPAdes --file clean.fq.list  --pwd data/Contigs_SPades/ --auto-run  --max-workers 1
