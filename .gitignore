@@ -1,13 +1,12 @@
 # created by virtualenv automatically
 db/
-db.tar.gz
 bptracer/__pycache__/
 *.pyc
 *.bak*
 examples/
 bin/BPTracer/Archive/
 Archive/
-Tests/Analysis/
+Tests/
 AI提示词.md
 gitadd.sh
 rm.sh

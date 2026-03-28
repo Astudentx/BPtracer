@@ -58,8 +58,7 @@ conda activate BPtracer
 Databases are large and are distributed via Baidu Netdisk. Please download and unpack them into `BPtracer/db/`:
 
 ```bash
-Link: https://pan.baidu.com/s/xxxxxxxx   Code: xxxx
-
+Link: https://pan.baidu.com/s/1CWRlWUYcu1KupAEeLOQjRA?pwd=gmur  Code: gmur
 cd BPtracer
 tar -zxvf db.tar.gz
 ```
